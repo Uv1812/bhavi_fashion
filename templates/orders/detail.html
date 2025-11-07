@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Details - Bhavi Fashion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-detail-container {
+        background-color: #F7F9FB;
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+    .order-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .order-header {
+        background: linear-gradient(135deg, #4A90E2 0%, #D81B60 100%);
+        color: #FFFFFF;
+        padding: 20px;
+        text-align: center;
+        border-radius: 12px 12px 0 0;
+    }
+    .order-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 10px;
+    }
+    .order-body {
+        padding: 30px;
+        background-color: #FFFFFF;
+    }
+    .order-item {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #E9ECEF;
+        margin-bottom: 10px;
+        background-color: #F7F9FB;
+        border-radius: 8px;
+    }
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    .order-item-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        margin-right: 20px;
+    }
+    .order-item-details h6 {
+        color: #4A90E2;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    .order-item-details p {
+        color: #6C757D;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    .summary-section {
+        background-color: #F7F9FB;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 1rem;
+    }
+    .summary-item.total {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #D81B60;
+    }
+    .status-badge {
+        font-size: 0.9rem;
+        padding: 8px 15px;
+        border-radius: 20px;
+    }
+    @media (max-width: 576px) {
+        .order-item {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .order-item-image {
+            margin-bottom: 15px;
+            margin-right: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="order-detail-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="order-card">
+                    <div class="order-header">
+                        <img src="{% static 'images/logo.jpg' %}" alt="Order Confirmed" class="order-icon">
+                        <h3>Order #{{ order.order_number }}</h3>
+                    </div>
+                    <div class="order-body">
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between flex-wrap mb-3">
+                                <div>
+                                    <strong>Status:</strong>
+                                    <span class="badge bg-success status-badge">{{ order.get_payment_status_display }}</span>
+                                </div>
+                                <div>
+                                    <strong>Date:</strong> {{ order.created_at|date:"F j, Y" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="mb-3">Items Ordered</h4>
+                        {% for item in order.items.all %}
+                        <div class="order-item">
+                            {% if item.product.primary_image %}
+                            <img src="{{ item.product.primary_image.image.url }}" alt="{{ item.product.name }}" class="order-item-image">
+                            {% elif item.product.images.first %}
+                            <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}" class="order-item-image">
+                            {% else %}
+                            <img src="{% static 'images/product-placeholder.jpg' %}" alt="{{ item.product.name }}" class="order-item-image">
+                            {% endif %}
+                            <div class="order-item-details">
+                                <h6>{{ item.product.name }}</h6>
+                                <p>Quantity: {{ item.quantity }}</p>
+                                {% if item.variant %}
+                                <p>Size: {{ item.variant.size }}, Color: {{ item.variant.color }}</p>
+                                {% endif %}
+                                <p>Price: ₹{{ item.price|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="summary-section">
+                            <h5>Order Summary</h5>
+                            <div class="summary-item">
+                                <span>Subtotal:</span>
+                                <span>₹{{ order.subtotal|floatformat:2 }}</span>
+                            </div>
+                            {% if order.discount > 0 %}
+                            <div class="summary-item text-success">
+                                <span>Discount:</span>
+                                <span>-₹{{ order.discount|floatformat:2 }}</span>
+                            </div>
+                            {% endif %}
+                            <div class="summary-item">
+                                <span>Shipping:</span>
+                                <span>
+                                    {% if order.shipping_cost > 0 %}
+                                        ₹{{ order.shipping_cost|floatformat:2 }}
+                                    {% else %}
+                                        Free
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="summary-item">
+                                <span>Tax (GST):</span>
+                                <span>₹{{ order.tax|floatformat:2 }}</span>
+                            </div>
+                            <div class="summary-item total">
+                                <span>Total:</span>
+                                <span>₹{{ order.total_amount|floatformat:2 }}</span>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <a href="{% url 'orders:order_history' %}" class="btn btn-primary">
+                                <i class="fas fa-list me-2"></i>View All Orders
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

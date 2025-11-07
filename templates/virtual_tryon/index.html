@@ -1,0 +1,544 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Virtual Try-On - Bhavi India Fashion{% endblock %}
+
+{% block content %}
+<main class="container my-5">
+    <h1 class="text-center mb-5">Virtual Try-On</h1>
+    
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">See How Our Products Look On You</h3>
+                    
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i> 
+                        Upload your photo or use the webcam to try on our products virtually!
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-center gap-3 mb-3">
+                            <button class="btn btn-primary" id="upload-photo">
+                                <i class="fas fa-upload me-2"></i>Upload Photo
+                            </button>
+                            <button class="btn btn-outline-primary" id="use-webcam">
+                                <i class="fas fa-camera me-2"></i>Use Webcam
+                            </button>
+                        </div>
+                        <input type="file" id="photo-upload" class="d-none" accept="image/*">
+                    </div>
+                    
+                    <div class="virtual-tryon-container mb-4">
+                        <div class="position-relative">
+                            <!-- User Photo Container -->
+                            <div id="photo-container" class="text-center d-flex justify-content-center align-items-center bg-light" style="height: 500px; width: 100%;">
+                                <div id="placeholder-msg">
+                                    <i class="fas fa-user fa-5x text-muted mb-3"></i>
+                                    <p>Your photo will appear here</p>
+                                </div>
+                                <img id="user-image" class="img-fluid d-none" alt="User Photo" style="max-height: 500px;">
+                                <video id="webcam" class="d-none" style="max-height: 500px;" autoplay playsinline></video>
+                            </div>
+                            
+                            <!-- Product Overlay Canvas -->
+                            <canvas id="overlay-canvas" class="position-absolute top-0 start-0 w-100 h-100 d-none"></canvas>
+                        </div>
+                        
+                        <div class="webcam-controls mt-3 text-center d-none" id="webcam-controls">
+                            <button class="btn btn-primary" id="capture-photo">
+                                <i class="fas fa-camera me-2"></i>Capture Photo
+                            </button>
+                            <button class="btn btn-outline-secondary" id="stop-webcam">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </button>
+                        </div>
+                        
+                        <div class="photo-controls mt-3 text-center d-none" id="photo-controls">
+                            <button class="btn btn-danger" id="reset-photo">
+                                <i class="fas fa-trash me-2"></i>Remove Photo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Selection -->
+                    <div class="product-selection mt-4">
+                        <h4 class="mb-3">Select a Product to Try On</h4>
+                        
+                        <div class="mb-3">
+                            <label for="product-category" class="form-label">Category</label>
+                            <select class="form-select" id="product-category">
+                                <option value="">Select Category</option>
+                                <option value="dupatta">Dupatta</option>
+                                <option value="kurti">Kurti</option>
+                                <option value="choli">Choli</option>
+                                <option value="blouse">Blouse</option>
+                            </select>
+                        </div>
+                        
+                        <div class="row g-3 mt-2 product-items-container">
+                            <!-- Product items will be dynamically loaded -->
+                            {% for product in products %}
+                            <div class="col-6 col-md-4 mb-3 product-item" data-category="{{ product.category.slug }}">
+                                <div class="card h-100 product-card">
+                                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ product.name }}</h5>
+                                        <button class="btn btn-sm btn-primary try-on-btn" data-product-id="{{ product.id }}" data-product-image="{{ product.virtual_try_image.url }}">
+                                            Try On
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-6 col-md-4 mb-3 product-item" data-category="kurti">
+                                <div class="card h-100 product-card">
+                                    <img src="{% static 'images/product-1.jpg' %}" class="card-img-top" alt="Designer Kurti">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Designer Kurti</h5>
+                                        <button class="btn btn-sm btn-primary try-on-btn" data-product-id="1">
+                                            Try On
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-6 col-md-4 mb-3 product-item" data-category="dupatta">
+                                <div class="card h-100 product-card">
+                                    <img src="{% static 'images/product-2.jpg' %}" class="card-img-top" alt="Embroidered Dupatta">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Embroidered Dupatta</h5>
+                                        <button class="btn btn-sm btn-primary try-on-btn" data-product-id="2">
+                                            Try On
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-6 col-md-4 mb-3 product-item" data-category="choli">
+                                <div class="card h-100 product-card">
+                                    <img src="{% static 'images/product-3.jpg' %}" class="card-img-top" alt="Designer Choli">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Designer Choli</h5>
+                                        <button class="btn btn-sm btn-primary try-on-btn" data-product-id="3">
+                                            Try On
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="try-on-controls mt-4 text-center d-none" id="try-on-controls">
+                        <button class="btn btn-outline-primary me-2" id="adjust-position">
+                            <i class="fas fa-arrows-alt me-2"></i>Adjust Position
+                        </button>
+                        <button class="btn btn-outline-primary me-2" id="adjust-size">
+                            <i class="fas fa-expand-arrows-alt me-2"></i>Adjust Size
+                        </button>
+                        <button class="btn btn-success" id="save-image">
+                            <i class="fas fa-save me-2"></i>Save Image
+                        </button>
+                        <button class="btn btn-outline-secondary" id="remove-overlay">
+                            <i class="fas fa-times me-2"></i>Remove Overlay
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- How It Works Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3 class="card-title mb-4">How Virtual Try-On Works</h3>
+                    <div class="row g-4">
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-camera fa-3x text-primary"></i>
+                            </div>
+                            <h5>Upload Your Photo</h5>
+                            <p>Choose a front-facing photo or use your webcam</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-tshirt fa-3x text-primary"></i>
+                            </div>
+                            <h5>Select Products</h5>
+                            <p>Browse and select items you want to try</p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-magic fa-3x text-primary"></i>
+                            </div>
+                            <h5>See the Magic</h5>
+                            <p>Our AI technology shows how the item looks on you</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const uploadPhotoBtn = document.getElementById('upload-photo');
+    const useWebcamBtn = document.getElementById('use-webcam');
+    const photoUploadInput = document.getElementById('photo-upload');
+    const photoContainer = document.getElementById('photo-container');
+    const placeholderMsg = document.getElementById('placeholder-msg');
+    const userImage = document.getElementById('user-image');
+    const webcam = document.getElementById('webcam');
+    const webcamControls = document.getElementById('webcam-controls');
+    const capturePhotoBtn = document.getElementById('capture-photo');
+    const stopWebcamBtn = document.getElementById('stop-webcam');
+    const photoControls = document.getElementById('photo-controls');
+    const resetPhotoBtn = document.getElementById('reset-photo');
+    const productCategory = document.getElementById('product-category');
+    const productItems = document.querySelectorAll('.product-item');
+    const tryOnBtns = document.querySelectorAll('.try-on-btn');
+    const overlayCanvas = document.getElementById('overlay-canvas');
+    const tryOnControls = document.getElementById('try-on-controls');
+    const adjustPositionBtn = document.getElementById('adjust-position');
+    const adjustSizeBtn = document.getElementById('adjust-size');
+    const saveImageBtn = document.getElementById('save-image');
+    const removeOverlayBtn = document.getElementById('remove-overlay');
+    
+    let stream = null;
+    let currentOverlay = null;
+    let isAdjustingPosition = false;
+    let isAdjustingSize = false;
+    let overlayX = 0;
+    let overlayY = 0;
+    let overlayScale = 1;
+    
+    // Event listeners
+    uploadPhotoBtn.addEventListener('click', () => {
+        photoUploadInput.click();
+    });
+    
+    photoUploadInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                userImage.src = event.target.result;
+                placeholderMsg.classList.add('d-none');
+                userImage.classList.remove('d-none');
+                photoControls.classList.remove('d-none');
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    });
+    
+    useWebcamBtn.addEventListener('click', startWebcam);
+    capturePhotoBtn.addEventListener('click', capturePhoto);
+    stopWebcamBtn.addEventListener('click', stopWebcam);
+    resetPhotoBtn.addEventListener('click', resetPhoto);
+    
+    productCategory.addEventListener('change', filterProducts);
+    
+    tryOnBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (userImage.classList.contains('d-none') && webcam.classList.contains('d-none')) {
+                showNotification('Please upload or capture a photo first', 'warning');
+                return;
+            }
+            
+            const productId = this.dataset.productId;
+            // In a real application, this would be the URL of a transparent PNG of the product
+            const productImageSrc = this.dataset.productImage || `{% static 'images/product-overlay-${productId}.png' %}`;
+            
+            tryOnProduct(productImageSrc);
+        });
+    });
+    
+    adjustPositionBtn.addEventListener('click', toggleAdjustPosition);
+    adjustSizeBtn.addEventListener('click', toggleAdjustSize);
+    removeOverlayBtn.addEventListener('click', removeOverlay);
+    saveImageBtn.addEventListener('click', saveImage);
+    
+    // Filter products by category
+    function filterProducts() {
+        const category = productCategory.value;
+        
+        productItems.forEach(item => {
+            if (!category || item.dataset.category === category) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    // Webcam functions
+    function startWebcam() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(videoStream) {
+                    stream = videoStream;
+                    webcam.srcObject = videoStream;
+                    placeholderMsg.classList.add('d-none');
+                    userImage.classList.add('d-none');
+                    webcam.classList.remove('d-none');
+                    webcamControls.classList.remove('d-none');
+                    photoControls.classList.add('d-none');
+                })
+                .catch(function(error) {
+                    console.error('Error accessing webcam:', error);
+                    showNotification('Unable to access webcam', 'danger');
+                });
+        } else {
+            showNotification('Webcam not supported by your browser', 'danger');
+        }
+    }
+    
+    function stopWebcam() {
+        if (stream) {
+            stream.getTracks().forEach(track => {
+                track.stop();
+            });
+            webcam.srcObject = null;
+            stream = null;
+        }
+        
+        webcam.classList.add('d-none');
+        webcamControls.classList.add('d-none');
+        placeholderMsg.classList.remove('d-none');
+    }
+    
+    function capturePhoto() {
+        const canvas = document.createElement('canvas');
+        canvas.width = webcam.videoWidth;
+        canvas.height = webcam.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+        
+        userImage.src = canvas.toDataURL('image/png');
+        userImage.classList.remove('d-none');
+        webcam.classList.add('d-none');
+        webcamControls.classList.add('d-none');
+        photoControls.classList.remove('d-none');
+        
+        stopWebcam();
+    }
+    
+    function resetPhoto() {
+        userImage.classList.add('d-none');
+        photoControls.classList.add('d-none');
+        placeholderMsg.classList.remove('d-none');
+        removeOverlay();
+    }
+    
+    // Virtual try-on functions
+    function tryOnProduct(productImageSrc) {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.onload = function() {
+            currentOverlay = img;
+            overlayX = (photoContainer.offsetWidth / 2) - (img.width / 2);
+            overlayY = (photoContainer.offsetHeight / 2) - (img.height / 2);
+            overlayScale = 1;
+            
+            drawOverlay();
+            overlayCanvas.classList.remove('d-none');
+            tryOnControls.classList.remove('d-none');
+        };
+        img.src = productImageSrc;
+        img.onerror = function() {
+            showNotification('Failed to load product image', 'danger');
+        };
+    }
+    
+    function drawOverlay() {
+        if (!currentOverlay) return;
+        
+        const ctx = overlayCanvas.getContext('2d');
+        overlayCanvas.width = photoContainer.offsetWidth;
+        overlayCanvas.height = photoContainer.offsetHeight;
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+        
+        const width = currentOverlay.width * overlayScale;
+        const height = currentOverlay.height * overlayScale;
+        
+        ctx.drawImage(currentOverlay, overlayX, overlayY, width, height);
+    }
+    
+    function toggleAdjustPosition() {
+        isAdjustingPosition = !isAdjustingPosition;
+        isAdjustingSize = false;
+        
+        adjustPositionBtn.classList.toggle('btn-outline-primary');
+        adjustPositionBtn.classList.toggle('btn-primary');
+        adjustSizeBtn.classList.remove('btn-primary');
+        adjustSizeBtn.classList.add('btn-outline-primary');
+        
+        if (isAdjustingPosition) {
+            overlayCanvas.style.cursor = 'move';
+            overlayCanvas.addEventListener('mousedown', startDrag);
+        } else {
+            overlayCanvas.style.cursor = 'default';
+            overlayCanvas.removeEventListener('mousedown', startDrag);
+        }
+    }
+    
+    function toggleAdjustSize() {
+        isAdjustingSize = !isAdjustingSize;
+        isAdjustingPosition = false;
+        
+        adjustSizeBtn.classList.toggle('btn-outline-primary');
+        adjustSizeBtn.classList.toggle('btn-primary');
+        adjustPositionBtn.classList.remove('btn-primary');
+        adjustPositionBtn.classList.add('btn-outline-primary');
+        
+        if (isAdjustingSize) {
+            // Add event listener for mouse wheel
+            overlayCanvas.addEventListener('wheel', handleResize);
+        } else {
+            overlayCanvas.removeEventListener('wheel', handleResize);
+        }
+    }
+    
+    function handleResize(e) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.05 : 0.05;
+        overlayScale = Math.max(0.1, Math.min(3, overlayScale + delta));
+        drawOverlay();
+    }
+    
+    function startDrag(e) {
+        let startX = e.clientX;
+        let startY = e.clientY;
+        let startOverlayX = overlayX;
+        let startOverlayY = overlayY;
+        
+        function drag(e) {
+            overlayX = startOverlayX + (e.clientX - startX);
+            overlayY = startOverlayY + (e.clientY - startY);
+            drawOverlay();
+        }
+        
+        function stopDrag() {
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+        
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('mouseup', stopDrag);
+    }
+    
+    function removeOverlay() {
+        currentOverlay = null;
+        overlayCanvas.classList.add('d-none');
+        tryOnControls.classList.add('d-none');
+        isAdjustingPosition = false;
+        isAdjustingSize = false;
+        
+        adjustPositionBtn.classList.remove('btn-primary');
+        adjustPositionBtn.classList.add('btn-outline-primary');
+        adjustSizeBtn.classList.remove('btn-primary');
+        adjustSizeBtn.classList.add('btn-outline-primary');
+    }
+    
+    function saveImage() {
+        if (!currentOverlay) return;
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = photoContainer.offsetWidth;
+        canvas.height = photoContainer.offsetHeight;
+        const ctx = canvas.getContext('2d');
+        
+        // Draw the user image
+        if (!webcam.classList.contains('d-none')) {
+            ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+        } else {
+            ctx.drawImage(userImage, 0, 0, canvas.width, canvas.height);
+        }
+        
+        // Draw the overlay
+        const width = currentOverlay.width * overlayScale;
+        const height = currentOverlay.height * overlayScale;
+        ctx.drawImage(currentOverlay, overlayX, overlayY, width, height);
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.download = 'virtual-tryon.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        
+        showNotification('Image saved successfully', 'success');
+    }
+    
+    function showNotification(message, type) {
+        const toast = document.createElement('div');
+        toast.classList.add('toast', 'align-items-center', 'text-white', `bg-${type}`, 'border-0', 'show');
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        `;
+        
+        const toastContainer = document.getElementById('toast-container');
+        toastContainer.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}
+
+
+<form action="{% url 'orders:add_to_cart' product.id %}" method="post" class="mb-4 add-to-cart-form">
+    {% csrf_token %}
+  <div class="input-group"> 
+    <div class="input-group mb-3" style="max-width: 200px;">
+        <button type="button" class="btn btn-outline-secondary quantity-dec" {% if not product.is_in_stock %}disabled{% endif %}>-</button>
+        <input type="number" name="quantity" class="form-control text-center quantity-input" 
+               value="{% if cart_item %}{{ cart_item.quantity }}{% else %}1{% endif %}" 
+               min="1" max="{{ product.stock }}" readonly>
+        <button type="button" class="btn btn-outline-secondary quantity-inc" {% if not product.is_in_stock %}disabled{% endif %}>+</button>
+    </div>
+    {% if user.is_authenticated %}
+    <button type="submit" class="btn btn-primary flex-grow-1 add-to-cart-btn" 
+            data-product-id="{{ product.id }}" style="margin-left:10px; height:40px" 
+            data-product-name="{{ product.name }}"
+            data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
+            {% if not product.is_in_stock %}disabled{% endif %}>
+        <i class="fas fa-shopping-cart me-2"></i>
+        {% if product.is_in_stock %}
+           {% if cart_item %}
+              Update Cart 
+           {%else%}
+              Add to Cart
+           {%endif%}
+        {% else %}
+           Out of Stock
+        {% endif %}
+        
+    </button>
+    {% else %}
+    <a href="#" class="add-to-cart-btn" data-bs-toggle="modal" data-bs-target="#loginModal" title="Add to Cart">
+        <button type="submit" class="btn btn-primary flex-grow-1 add-to-cart-btn" 
+        data-product-id="{{ product.id }}" 
+        data-product-name="{{ product.name }}"
+        data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}"
+        {% if not product.is_in_stock %}disabled{% endif %}>
+           <i class="fas fa-shopping-cart me-2"></i> 
+           {% if product.is_in_stock %}Add to Cart{% else %}Out of Stock{% endif %}
+       </button>
+    </a>
+    {% endif %}
+</div>
+</form>

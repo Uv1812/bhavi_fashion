@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Payment - Order #{{ order.order_number }} | Bhavi Fashion{% endblock %}
+
+{% block extra_css %}
+<style>
+    .razorpay-payment-button {
+        display: none;
+    }
+    .payment-processing {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+    .processing-spinner {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    .payment-card {
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .payment-summary {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 15px;
+    }
+    #payment-loading {
+        display: none;
+    }
+    .order-total {
+        font-size: 20px;
+        font-weight: 700;
+        color: #800080;
+    }
+    .payment-header {
+        background-color: #800080;
+        color: white;
+        padding: 15px;
+        border-radius: 8px 8px 0 0;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    .payment-methods {
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        background-color: white;
+    }
+    .payment-methods select {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        appearance: none;
+        background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path d="M2 4l4 4 4-4H2z" fill="%23333"/></svg>') no-repeat right 10px center;
+        background-size: 12px;
+    }
+    .payment-methods option {
+        padding: 10px;
+        font-size: 14px;
+    }
+    .pay-button {
+        background-color: #ff6200;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 4px;
+        width: 100%;
+        font-size: 16px;
+        margin-top: 15px;
+        cursor: pointer;
+    }
+    .pay-button:hover {
+        background-color: #e65c00;
+    }
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 10px;
+        color: #800080;
+        text-decoration: none;
+    }
+    .payment-icons img {
+        width: 20px;
+        height: 20px;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <div class="card payment-card">
+                <div class="card-header payment-header">
+                    <h3 class="mb-0">Complete Payment</h3>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Order Summary</h4>
+                            <div class="payment-summary mb-4">
+                                <p class="mb-2"><strong>Order Number:</strong> {{ order.order_number }}</p>
+                                <p class="mb-2"><strong>Date:</strong> {{ order.created_at|date:"F d, Y" }}</p>
+                                <p class="mb-2"><strong>Items:</strong> {{ order.items.count }}</p>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Subtotal:</span>
+                                    <span>₹{{ order.subtotal }}</span>
+                                </div>
+                                {% if order.discount > 0 %}
+                                <div class="d-flex justify-content-between mb-2 text-success">
+                                    <span>Discount:</span>
+                                    <span>-₹{{ order.discount }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Shipping:</span>
+                                    <span>₹{{ order.shipping_cost }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Tax:</span>
+                                    <span>₹{{ order.tax }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between order-total">
+                                    <span>Total:</span>
+                                    <span>₹{{ order.total_amount }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="mb-3">Payment Details</h4>
+                            <p>Please select a payment method below to proceed.</p>
+                            <div class="payment-methods">
+                                <select id="payment-method">
+                                    <option value="" disabled selected>Select Payment Method</option>
+                                    <option value="upi_qr">UPI QR <img src="{% static 'images/upi_qr.png' %}" alt="UPI QR"></option>
+                                    <option value="card">Card (Visa, MasterCard, RuPay, Maestro) <img src="{% static 'images/card.png' %}" alt="Card"></option>
+                                    <option value="upi">UPI <img src="{% static 'images/upi.png' %}" alt="UPI"></option>
+                                    <option value="netbanking">Netbanking <img src="{% static 'images/netbanking.png' %}" alt="Netbanking"></option>
+                                    <option value="wallet">Wallet (Mobikwik & More) <img src="{% static 'images/wallet.png' %}" alt="Wallet"></option>
+                                    <option value="paylater">Pay Later (Simpl, LazyPay, ICICI & More) <img src="{% static 'images/paylater.png' %}" alt="Pay Later"></option>
+                                </select>
+                                <button class="pay-button" id="rzp-button">Pay Now</button>
+                                <a href="{% url 'orders:order_detail' order.id %}" class="back-link">Back to Order Details</a>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <small class="text-muted">Secured by</small>
+                                <img src="{% static 'images/razorpay-logo.png' %}" alt="Razorpay" height="25" class="mx-2">
+                                <img src="{% static 'images/secure-payment.png' %}" alt="Secure Payment" height="25" class="mx-2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-light p-3">
+                    <div class="text-center">
+                        <a href="{% url 'orders:order_detail' order.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Order Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'payment-loading';
+        loadingOverlay.className = 'payment-processing';
+        loadingOverlay.innerHTML = '<div class="processing-spinner"><i class="fas fa-spinner fa-spin"></i> Processing Payment...</div>';
+        document.body.appendChild(loadingOverlay);
+
+        var options = {
+            "key": "{{ razorpay_key_id }}",
+            "amount": "{{ order.total_amount|floatformat:2|cut:'.' }}",
+            "currency": "INR",
+            "name": "Bhavi Fashion",
+            "description": "Order #{{ order.order_number }} Payment",
+            "image": "{% static 'images/logo.jpg' %}",
+            "order_id": "{{ razorpay_order_id }}",
+            "handler": function (response) {
+                loadingOverlay.style.display = 'flex';
+                verifyPayment(response)
+                    .then(url => window.location.href = url)
+                    .catch(err => {
+                        alert(err);
+                        loadingOverlay.style.display = 'none';
+                        window.location.reload();
+                    });
+            },
+            "prefill": {
+                "name": "{{ user.get_full_name|default:'Customer' }}",
+                "email": "{{ user.email|default:'customer@bhavifashion.com' }}",
+                "contact": "{{ user.profile.phone|default:'9000000000' }}"
+            },
+            "notes": {
+                "order_id": "{{ order.id }}",
+                "merchant_order_id": "{{ order.order_number }}"
+            },
+            "theme": {
+                "color": "#800080"
+            },
+            "modal": {
+                "ondismiss": function () {
+                    loadingOverlay.style.display = 'none';
+                    alert('Payment cancelled. Please try again.');
+                }
+            }
+        };
+
+        var rzp = new Razorpay(options);
+
+        document.getElementById('rzp-button').onclick = function (e) {
+            e.preventDefault();
+            const method = document.getElementById('payment-method').value;
+            if (!method) {
+                alert('Please select a payment method.');
+                return;
+            }
+            loadingOverlay.style.display = 'flex';
+            options.method = method;
+            rzp.open();
+        };
+
+        async function verifyPayment(response) {
+            try {
+                const res = await fetch("{% url 'orders:payment_callback' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new URLSearchParams({
+                        'razorpay_payment_id': response.razorpay_payment_id,
+                        'razorpay_order_id': response.razorpay_order_id,
+                        'razorpay_signature': response.razorpay_signature
+                    })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.error || 'Verification failed');
+                return data.redirect_url;
+            } catch (error) {
+                console.error('Payment error:', error);
+                throw new Error('Payment failed. Please try again.');
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+</script>
+{% endblock %}

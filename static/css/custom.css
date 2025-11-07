@@ -1,0 +1,165 @@
+
+/* General Reset for Dark Mode */
+body, .main-content {
+    background-color: #1E2529; /* Dark Mist */
+    color: #EDEFF2; /* Cloud White */
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: #2B343B; /* Deep Slate */
+}
+.sidebar a, .sidebar .nav-link {
+    color: #EDEFF2;
+}
+.sidebar a:hover, .sidebar .nav-link:hover {
+    background-color: #4A677D; /* Slate Blue */
+}
+.sidebar .nav-item.active, .sidebar .nav-item.active a {
+    background-color: #4A677D;
+    color: #EDEFF2;
+}
+
+/* Navbar */
+.navbar {
+    background-color: #2B3A47; /* Dark Slate Blue */
+    border-bottom: 1px solid #4A5560; /* Cool Gray */
+}
+.navbar-brand, .navbar a, .navbar .nav-link {
+    color: #EDEFF2;
+}
+.navbar .nav-link:hover {
+    color: #00bc8c; /* Teal */
+}
+
+/* Content */
+.card, .card-body, .module {
+    background-color: #1E2529; /* Dark Mist */
+    color: #EDEFF2;
+    border: 1px solid #4A5560; /* Cool Gray */
+}
+.card-header {
+    background-color: #2B343B; /* Deep Slate */
+    color: #EDEFF2;
+}
+
+/* Tables */
+.table {
+    background-color: #2B343B; /* Deep Slate */
+    color: #EDEFF2;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #3B4651; /* Steel Gray */
+}
+.table thead th {
+    background-color: #4A5560; /* Cool Gray */
+    color: #EDEFF2;
+    border-bottom: 2px solid #4A677D; /* Slate Blue */
+}
+.table a {
+    color: #00bc8c; /* Teal */
+}
+.table a:hover {
+    color: #EDEFF2;
+}
+
+/* Buttons */
+.btn-primary, .btn-success {
+    background-color: #00bc8c; /* Teal */
+    border-color: #00bc8c;
+    color: #EDEFF2;
+}
+.btn-primary:hover, .btn-success:hover {
+    background-color: #019875; /* Darker Teal */
+    border-color: #019875;
+}
+.btn-danger {
+    background-color: #e74c3c; /* Red */
+    border-color: #e74c3c;
+}
+.btn-danger:hover {
+    background-color: #c0392b; /* Darker Red */
+}
+.btn-warning {
+    background-color: #f1c40f; /* Yellow */
+    border-color: #f1c40f;
+    color: #1E2529; /* Dark text for contrast */
+}
+.btn-warning:hover {
+    background-color: #d4ac0d; /* Darker Yellow */
+}
+
+/* Forms */
+.form-control, .form-select {
+    background-color: #3B4651; /* Steel Gray */
+    color: #EDEFF2;
+    border: 1px solid #4A5560; /* Cool Gray */
+}
+.form-control:focus, .form-select:focus {
+    background-color: #4A5560;
+    border-color: #00bc8c; /* Teal */
+    box-shadow: 0 0 0 0.2rem rgba(0, 188, 140, 0.25);
+}
+.form-label {
+    color: #EDEFF2;
+}
+
+/* Alerts */
+.alert-success {
+    background-color: rgba(0, 188, 140, 0.2);
+    color: #00bc8c;
+    border-color: #00bc8c;
+}
+.alert-danger {
+    background-color: rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border-color: #e74c3c;
+}
+.alert-warning {
+    background-color: rgba(241, 196, 15, 0.2);
+    color: #f1c40f;
+    border-color: #f1c40f;
+}
+
+/* Chart Container (from change_list.html) */
+.chart-container {
+    background-color: #2B343B; /* Deep Slate */
+    border: 1px solid #4A5560; /* Cool Gray */
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* Filters and Inline Panels */
+.related-widget-wrapper select {
+    background-color: #3B4651; /* Steel Gray */
+    color: #EDEFF2;
+    border: 1px solid #4A5560;
+}
+.inline-related {
+    background-color: #1E2529; /* Dark Mist */
+    border: 1px solid #4A5560;
+}
+.paginator .pagination {
+    background-color: #2B343B;
+}
+.paginator .page-link {
+    background-color: #3B4651;
+    color: #EDEFF2;
+    border: 1px solid #4A5560;
+}
+.paginator .page-link:hover {
+    background-color: #4A677D;
+}
+
+/* Jazzmin-Specific Elements */
+.brand-link {
+    background-color: #2B343B !important; /* Deep Slate */
+    color: #EDEFF2 !important;
+}
+.navbar-expand .navbar-nav .nav-link {
+    color: #EDEFF2;
+}
+.navbar-expand .navbar-nav .nav-link:hover {
+    color: #00bc8c;
+}
