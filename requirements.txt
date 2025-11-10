@@ -10,3 +10,4 @@ crispy-bootstrap5
 django-extensions
 django-jazzmin
 mysqlclient
+xhtml2pdf
