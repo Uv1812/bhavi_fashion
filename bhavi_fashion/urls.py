@@ -1,4 +1,4 @@
-from django.contrib import adminmessages
+from django.contrib import admin,messages
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
