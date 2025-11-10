@@ -8,4 +8,4 @@ python-decouple
 django-crispy-forms
 crispy-bootstrap5
 django-extensions
-werkzeug
+django-jazzmin
