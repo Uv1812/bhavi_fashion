@@ -153,9 +153,11 @@ SHIPROCKET_TOKEN = 'your_shiprocket_token'
 
 # Database
 DATABASES = {
-    'default': {
-       'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
-    }
+    import os
+from dj_database_url import parse as db_url
+
+DATABASES = {
+    'default': db_url(os.environ.get('DATABASE_URL'), conn_max_age=600)
 }
 
 # Password validation
