@@ -153,12 +153,7 @@ SHIPROCKET_TOKEN = 'your_shiprocket_token'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'bhavi_fashion'),
-        'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'Urvisha@1812'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
+       'default': dj_database_url.parse(os.environ.get('DATABASE_URL'))
     }
 }
 
