@@ -11,3 +11,4 @@ django-extensions
 django-jazzmin
 mysqlclient
 xhtml2pdf
+dj-database-url
