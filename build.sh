@@ -19,4 +19,4 @@ python manage.py check --deploy
 # User.objects.create_superuser('UG', 'uvgothadiya199@gmail.com', 'jungkook123')" | python manage.py shell
 
 echo "Starting Server..."
-exec gunicorn bhavi_fashion.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 300
+gunicorn bhavi_fashion.wsgi:application --bind 0.0.0.0:$PORT
