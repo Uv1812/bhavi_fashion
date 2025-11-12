@@ -152,7 +152,7 @@ WSGI_APPLICATION = 'bhavi_fashion.wsgi.application'
 SHIPROCKET_TOKEN = 'your_shiprocket_token'
 
 DATABASES = {
-    'default': db_url(os.environ.get('DATABASE_URL'), conn_max_age=600)
+    'default': db_url(os.environ.get('DATABASE_URL'))
 }
 
 # Password validation
