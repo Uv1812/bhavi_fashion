@@ -16,7 +16,7 @@ python manage.py check --deploy
 echo "Creating superuser..."
 echo "from django.contrib.auth import get_user_model; \
 User = get_user_model(); \
-User.objects.create_superuser('JK', 'uvgothadiya1812@gmail.com', 'jungkook123')" | python manage.py shell
+User.objects.create_superuser('V', 'uv1812@gmail.com', 'jungkook123')" | python manage.py shell
 
 echo "Starting Server..."
 exec gunicorn bhavi_fashion.wsgi:application --bind 0.0.0.0:$PORT --workers 1 --timeout 300
